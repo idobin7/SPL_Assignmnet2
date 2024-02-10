@@ -143,7 +143,27 @@ public class Dealer implements Runnable {
      * Check who is/are the winner/s and displays them.
      */
     private void announceWinners() {
-        // TODO implement
+        int max=-1;
+        int counter=0;
+        for(int i=0;i< players.length;i++){
+            if(players[i].score()>max){
+                max=players[i].score();
+            }
+        }
+        for (int i=0;i< players.length;i++){
+            if(players[i].score()==max){
+                counter++;
+            }
+        }
+        int[] winners=new int[counter];
+        int win=0;
+        for (int i=0;i< players.length;i++){
+            if(players[i].score()==max){
+                winners[win]=i;
+                win++;
+            }
+        }
+        env.ui.announceWinner(winners);
     }
 
     public boolean checkSet(Integer[] myToken){
