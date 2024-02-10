@@ -101,13 +101,17 @@ public class Dealer implements Runnable {
         for(int i=0;i<cardsToRemove.length;i++){
             table.removeCard(cardsToRemove[i]);
         }
+        placeCardsOnTable();
     }
 
     /**
      * Check if any cards can be removed from the deck and placed on the table.
      */
     private void placeCardsOnTable() {
-        // TODO implement
+        for(int i=0;i<3 && !deck.isEmpty(); i++){
+            table.placeCard(deck.remove(0), cardsToRemove[i]);
+            cardsToRemove[i]=null;
+         }
     }
 
     /**
@@ -121,7 +125,11 @@ public class Dealer implements Runnable {
      * Reset and/or update the countdown and the countdown display.
      */
     private void updateTimerDisplay(boolean reset) {
-        // TODO implement
+        if(reset){
+
+        }else {
+
+        }
     }
 
     /**
@@ -154,6 +162,6 @@ public class Dealer implements Runnable {
 
     public void sucSet(){
         removeCardsFromTable();
-        updateTimerDisplay(true); //to dooooo
+        updateTimerDisplay(true);
     }
 }

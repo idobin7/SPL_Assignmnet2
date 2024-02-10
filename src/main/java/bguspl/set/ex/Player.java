@@ -140,7 +140,7 @@ public class Player implements Runnable {
         score++;
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
         env.ui.setScore(id, ++score);
-        //to add freeze (ido)
+        setFreeze(env.config.pointFreezeMillis);
     }
 
     public void placeToken(int slot){
@@ -154,6 +154,7 @@ public class Player implements Runnable {
                 if(isSet){
                     for(int i=0;i<3;i++){
                         removeToken(myToken[i]);
+                        point();
                     }
                 } else {
                     penalty();
@@ -184,7 +185,7 @@ public class Player implements Runnable {
     public void setFreeze(long millies){
         while(millies > 0){
             env.ui.setFreeze(id, millies);
-
+            millies = millies - Table.SECOND_BY_MILLIS;
         }
         //syncronized therd
     }

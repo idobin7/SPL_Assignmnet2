@@ -2,10 +2,9 @@ package bguspl.set.ex;
 
 import bguspl.set.Env;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
+
 
 /**
  * This class contains the data that is visible to the player.
@@ -30,6 +29,8 @@ public class Table {
     protected final Integer[] cardToSlot; // slot per card (if any)
 
     private List<Integer>[] tokenMap;
+    public static final int SECOND_BY_MILLIS = 1000;
+
 
 
     /**
@@ -44,8 +45,8 @@ public class Table {
         this.env = env;
         this.slotToCard = slotToCard;
         this.cardToSlot = cardToSlot;
-        this.tokenMap=new LinkedList[12];
-        for (int i = 0; i < tokenMap.length(); i++) {
+        this.tokenMap = (List<Integer>[]) new LinkedList[12];
+        for (int i = 0; i < tokenMap.length; i++) {
             tokenMap[i] = new LinkedList<>();
         }
     }
@@ -113,7 +114,7 @@ public class Table {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {}
 
-        card=slotToCard[slot];
+        Integer card=slotToCard[slot];
         cardToSlot[card]=null;
         slotToCard[slot]=null;
 
@@ -127,7 +128,7 @@ public class Table {
      * @param slot   - the slot on which to place the token.
      */
     public void placeToken(int player, int slot) {
-        tokenMap[player].push(player);
+        tokenMap[slot].add(player);
         env.ui.placeToken(player, slot);
     }
 
@@ -138,7 +139,17 @@ public class Table {
      * @return       - true iff a token was successfully removed.
      */
     public boolean removeToken(int player, int slot) {
-        // TODO implement
-        return false;
+        boolean found = false;
+        ListIterator<Integer> iterator = tokenMap[slot].listIterator();
+            while (iterator.hasNext() && !found) {
+                Integer temp = iterator.next();
+                if (temp.equals(player)) {
+                    iterator.remove();
+                    found = true;
+                }
+            }
+        return found;
     }
+
+
 }
