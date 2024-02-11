@@ -2,6 +2,9 @@ package bguspl.set.ex;
 
 import bguspl.set.Env;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 /**
  * This class manages the players' threads and data
  *
@@ -57,6 +60,9 @@ public class Player implements Runnable {
 
     private Dealer dealer;
 
+    private Queue<Integer> actions;
+
+
     /**
      * The class constructor.
      *
@@ -77,6 +83,7 @@ public class Player implements Runnable {
         for (int i = 0; i < myToken.length; i++) {
             myToken[i] = null;
         }
+        this.actions=new LinkedList<Integer>() ;
     }
 
     /**
@@ -127,7 +134,7 @@ public class Player implements Runnable {
      * @param slot - the slot corresponding to the key pressed.
      */
     public void keyPressed(int slot) {
-        // TODO implement
+        actions.add(slot);
     }
 
     /**

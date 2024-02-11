@@ -2,9 +2,12 @@ package bguspl.set.ex;
 
 import bguspl.set.Env;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
 
 /**
  * This class manages the dealer's threads and data
@@ -39,6 +42,7 @@ public class Dealer implements Runnable {
 
     private Integer[] cardsToRemove;
 
+
     public Dealer(Env env, Table table, Player[] players) {
         this.env = env;
         this.table = table;
@@ -48,6 +52,8 @@ public class Dealer implements Runnable {
         for(int i=0 ;i<cardsToRemove.length;i++){
             cardsToRemove[i]=null;
         }
+        Collections.shuffle(deck);
+
     }
 
     /**
@@ -108,10 +114,14 @@ public class Dealer implements Runnable {
      * Check if any cards can be removed from the deck and placed on the table.
      */
     private void placeCardsOnTable() {
-        for(int i=0;i<3 && !deck.isEmpty(); i++){
-            table.placeCard(deck.remove(0), cardsToRemove[i]);
-            cardsToRemove[i]=null;
-         }
+        List<Integer> slots = IntStream.range(0, env.config.tableSize).boxed().collect(Collectors.toList());
+        Collections.shuffle(slots);
+        for (int slot: slots){
+            if(!deck.isEmpty() && table.slotToCard[slot] == null){
+                Integer cardToPlace = deck.remove(deck.size() - 1);
+                table.placeCard(cardToPlace, slot);
+            }
+        }
     }
 
     /**
@@ -136,7 +146,24 @@ public class Dealer implements Runnable {
      * Returns all the cards from the table to the deck.
      */
     private void removeAllCardsFromTable() {
-        // TODO implement
+        removeAllTokens();
+        List<Integer> slots = IntStream.range(0, env.config.tableSize).boxed().collect(Collectors.toList());
+        for (int slot : slots) {
+            Integer cardToRemove = table.slotToCard[slot];
+            if (cardToRemove != null) {
+                table.removeCard(slot);
+                deck.add(cardToRemove);
+            }
+        }
+        Collections.shuffle(deck);
+
+    }
+
+
+    public void removeAllTokens() {
+        for (Player player : players) {
+            player.deleteTokens();
+        }
     }
 
     /**
@@ -185,3 +212,5 @@ public class Dealer implements Runnable {
         updateTimerDisplay(true);
     }
 }
+
+
