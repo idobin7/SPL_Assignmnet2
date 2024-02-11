@@ -162,7 +162,7 @@ public class Dealer implements Runnable {
 
     public void removeAllTokens() {
         for (Player player : players) {
-            player.deleteTokens();
+            player.deleteToken();
         }
     }
 

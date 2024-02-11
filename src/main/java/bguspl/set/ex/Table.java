@@ -45,7 +45,7 @@ public class Table {
         this.env = env;
         this.slotToCard = slotToCard;
         this.cardToSlot = cardToSlot;
-        this.tokenMap = (List<Integer>[]) new LinkedList[12];
+        this.tokenMap = (List<Integer>[]) new LinkedList[env.config.tableSize];
         for (int i = 0; i < tokenMap.length; i++) {
             tokenMap[i] = new LinkedList<>();
         }

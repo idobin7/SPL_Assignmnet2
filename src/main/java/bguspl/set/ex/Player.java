@@ -56,7 +56,7 @@ public class Player implements Runnable {
 
     private int tokenCounter;
 
-    private Integer myToken[];
+    private Integer myTokens[];
 
     private Dealer dealer;
 
@@ -79,11 +79,11 @@ public class Player implements Runnable {
         this.id = id;
         this.human = human;
         this.tokenCounter = 0;
-        this.myToken=new Integer[3];
-        for (int i = 0; i < myToken.length; i++) {
-            myToken[i] = null;
+        this.myTokens = new Integer[3];
+        for (int i = 0; i < myTokens.length; i++) {
+            myTokens[i] = -1;
         }
-        this.actions=new LinkedList<Integer>() ;
+        this.actions = new LinkedList<Integer>();
     }
 
     /**
@@ -96,6 +96,13 @@ public class Player implements Runnable {
         if (!human) createArtificialIntelligence();
 
         while (!terminate) {
+            if(!actions.isEmpty()) {
+                int slotAction = actions.remove();
+                if (hasToken(slotAction))
+                    removeToken(slotAction);
+                else
+                    placeToken(slotAction);
+            }
             // TODO implement main player loop
         }
         if (!human) try { aiThread.join(); } catch (InterruptedException ignored) {}
@@ -111,6 +118,11 @@ public class Player implements Runnable {
         aiThread = new Thread(() -> {
             env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
             while (!terminate) {
+                int slotAction = (int) (Math.random() * env.config.tableSize);
+                if (hasToken(slotAction))
+                    removeToken(slotAction);
+                else
+                    placeToken(slotAction);
                 // TODO implement player key press simulator
                 try {
                     synchronized (this) { wait(); }
@@ -127,6 +139,7 @@ public class Player implements Runnable {
     public void terminate() {
         terminate = true;
     }
+
 
     /**
      * This method is called when a key is pressed.
@@ -150,17 +163,17 @@ public class Player implements Runnable {
         setFreeze(env.config.pointFreezeMillis);
     }
 
-    public void placeToken(int slot){
-        if(tokenCounter<3){
-            myToken[tokenCounter]=slot;
+    public void placeToken(int slot) {
+        if (tokenCounter < 3) {
+            myTokens[tokenCounter] = slot;
             tokenCounter++;
             table.placeToken(id, slot);
-            if(tokenCounter==3){
+            if (tokenCounter == 3) {
                 boolean isSet;
-                isSet=dealer.checkSet(myToken);
-                if(isSet){
-                    for(int i=0;i<3;i++){
-                        removeToken(myToken[i]);
+                isSet = dealer.checkSet(myTokens);
+                if (isSet) {
+                    for (int i = 0; i < 3; i++) {
+                        removeToken(myTokens[i]);
                         point();
                     }
                 } else {
@@ -170,14 +183,24 @@ public class Player implements Runnable {
         }
     }
 
-    public void removeToken(int slot){
-        boolean found=false;
-        for(int i=0;i<myToken.length  && !found;i++){
-            if(myToken[i]==slot){
-                myToken[i]=-1;
+    public void removeToken(int slot) {
+        boolean found = false;
+        for (int i = 0; i < myTokens.length && !found; i++) {
+            if (myTokens[i] == slot) {
+                myTokens[i] = -1;
                 tokenCounter--;
-                found=true;
+                found = true;
                 table.removeToken(id, slot);
+            }
+        }
+    }
+
+    public void deleteToken() {
+        for (int i = 0; i < 3; i++) {
+            if (myTokens[i] != -1) {
+                table.removeToken(id, myTokens[i]);
+                tokenCounter--;
+                myTokens[i] = -1;
             }
         }
     }
@@ -189,8 +212,8 @@ public class Player implements Runnable {
         setFreeze(env.config.penaltyFreezeMillis);
     }
 
-    public void setFreeze(long millies){
-        while(millies > 0){
+    public void setFreeze(long millies) {
+        while (millies > 0) {
             env.ui.setFreeze(id, millies);
             millies = millies - Table.SECOND_BY_MILLIS;
         }
@@ -199,5 +222,14 @@ public class Player implements Runnable {
 
     public int score() {
         return score;
+    }
+
+
+    public boolean hasToken(int slot) {
+        boolean hasToken = false;
+        for (int i = 0; i < myTokens.length && !hasToken; i++)
+            if (myTokens[i] == slot)
+                hasToken = true;
+        return hasToken;
     }
 }
