@@ -1,0 +1,31 @@
+[17:00:10.611] [INFO   ] thread main starting.
+[17:00:10.618] [SEVERE ] cannot read configuration file config.properties trying from resources.
+[17:00:10.620] [SEVERE ] configuration file was loaded from resources directory.
+[17:00:10.980] [INFO   ] thread dealer starting.
+[17:00:10.981] [INFO   ] thread dealer starting.
+[17:00:11.086] [SEVERE ] placing card 80 in slot 0
+[17:00:11.196] [SEVERE ] placing card 79 in slot 1
+[17:00:11.308] [SEVERE ] placing card 78 in slot 2
+[17:00:11.418] [SEVERE ] placing card 77 in slot 3
+[17:00:11.527] [SEVERE ] placing card 76 in slot 4
+[17:00:11.638] [SEVERE ] placing card 75 in slot 5
+[17:00:11.747] [SEVERE ] placing card 74 in slot 6
+[17:00:11.855] [SEVERE ] placing card 73 in slot 7
+[17:00:11.965] [SEVERE ] placing card 72 in slot 8
+[17:00:12.075] [SEVERE ] placing card 71 in slot 9
+[17:00:12.187] [SEVERE ] placing card 70 in slot 10
+[17:00:12.297] [SEVERE ] placing card 69 in slot 11
+[17:00:12.300] [INFO   ] thread dealer terminated.
+[17:00:14.631] [SEVERE ] key 81 was pressed by player 1
+[17:00:14.870] [SEVERE ] key 81 was pressed by player 1
+[17:00:15.209] [SEVERE ] key 87 was pressed by player 1
+[17:00:15.536] [SEVERE ] key 69 was pressed by player 1
+[17:00:16.154] [SEVERE ] key 65 was pressed by player 1
+[17:00:16.166] [SEVERE ] key 83 was pressed by player 1
+[17:00:16.251] [SEVERE ] key 68 was pressed by player 1
+[17:00:16.601] [SEVERE ] key 90 was pressed by player 1
+[17:00:16.644] [SEVERE ] key 88 was pressed by player 1
+[17:00:16.762] [SEVERE ] key 67 was pressed by player 1
+[17:00:17.315] [SEVERE ] thanks for playing... it was fun!
+[17:00:17.317] [INFO   ] thread main terminated.
+[17:00:17.317] [SEVERE ] disposing of user interface elements

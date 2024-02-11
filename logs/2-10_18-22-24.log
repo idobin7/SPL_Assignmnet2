@@ -1,0 +1,13 @@
+[18:22:24.265] [INFO   ] thread main starting.
+[18:22:24.271] [SEVERE ] cannot read configuration file config.properties trying from resources.
+[18:22:24.273] [SEVERE ] configuration file was loaded from resources directory.
+[18:22:24.701] [INFO   ] thread dealer starting.
+[18:22:24.702] [INFO   ] thread dealer starting.
+[18:22:24.708] [INFO   ] thread dealer terminated.
+[18:22:26.054] [SEVERE ] key 65 was pressed by player 1
+[18:22:26.543] [SEVERE ] key 81 was pressed by player 1
+[18:22:26.731] [SEVERE ] key 81 was pressed by player 1
+[18:22:27.975] [SEVERE ] key 87 was pressed by player 1
+[18:22:29.719] [SEVERE ] thanks for playing... it was fun!
+[18:22:29.719] [INFO   ] thread main terminated.
+[18:22:29.719] [SEVERE ] disposing of user interface elements
