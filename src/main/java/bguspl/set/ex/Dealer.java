@@ -42,6 +42,12 @@ public class Dealer implements Runnable {
 
     private Integer[] cardsToRemove;
 
+    private long whenToWake = Long.MAX_VALUE;
+
+    private Thread dealerThread;
+
+
+
 
     public Dealer(Env env, Table table, Player[] players) {
         this.env = env;
@@ -61,7 +67,12 @@ public class Dealer implements Runnable {
      */
     @Override
     public void run() {
+        this.dealerThread = Thread.currentThread();
         env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
+        for (Player player : players) {
+            Thread playerThread = new Thread(player, player.id + " ");
+            playerThread.start();
+        }
         while (!shouldFinish()) {
             placeCardsOnTable();
             timerLoop();
@@ -105,7 +116,10 @@ public class Dealer implements Runnable {
      */
     private void removeCardsFromTable() {
         for(int i=0;i<cardsToRemove.length;i++){
-            table.removeCard(cardsToRemove[i]);
+            if(cardsToRemove[i] != null){
+                table.removeCard(cardsToRemove[i]);
+                cardsToRemove[i]=null;
+            }
         }
         placeCardsOnTable();
     }
@@ -128,18 +142,35 @@ public class Dealer implements Runnable {
      * Sleep for a fixed amount of time or until the thread is awakened for some purpose.
      */
     private void sleepUntilWokenOrTimeout() {
-        // TODO implement
-    }
+        synchronized (table.setsDeclared) {
+            try {
+                if (env.config.turnTimeoutMillis >= 0) {
+                    long waitingTime = whenToWake - System.currentTimeMillis();
+                    if (table.setsDeclared.isEmpty() && waitingTime > 1)
+                        table.setsDeclared.wait(waitingTime - 1);
+                }
+                // no timer state
+                else if (env.config.turnTimeoutMillis < 0) {
+                    if (table.setsDeclared.isEmpty())
+                        table.setsDeclared.wait();
+                }
+            } catch (InterruptedException ignored) {}
+        }    }
 
     /**
      * Reset and/or update the countdown and the countdown display.
      */
     private void updateTimerDisplay(boolean reset) {
-        if(reset){
+            long time = System.currentTimeMillis();
+            if(!reset) {
+                if (time <= this.env.config.turnTimeoutWarningMillis && time >= 0)
+                    this.env.ui.setCountdown(time, true);
+                else
+                    this.env.ui.setCountdown(time, false);
+            } else {
+                this.env.ui.setCountdown(time+this.env.config.turnTimeoutMillis, false);
+            }
 
-        }else {
-
-        }
     }
 
     /**
@@ -162,7 +193,7 @@ public class Dealer implements Runnable {
 
     public void removeAllTokens() {
         for (Player player : players) {
-            player.deleteToken();
+            player.deleteTokens();
         }
     }
 

@@ -29,6 +29,9 @@ public class Table {
     protected final Integer[] cardToSlot; // slot per card (if any)
 
     private List<Integer>[] tokenMap;
+
+    protected Queue<Integer> setsDeclared;
+
     public static final int SECOND_BY_MILLIS = 1000;
 
 
@@ -49,6 +52,8 @@ public class Table {
         for (int i = 0; i < tokenMap.length; i++) {
             tokenMap[i] = new LinkedList<>();
         }
+        this.setsDeclared = new LinkedList<Integer>();
+
     }
 
     /**

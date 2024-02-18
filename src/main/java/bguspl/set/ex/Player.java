@@ -170,6 +170,7 @@ public class Player implements Runnable {
             table.placeToken(id, slot);
             if (tokenCounter == 3) {
                 boolean isSet;
+                table.setsDeclared.add(id);
                 isSet = dealer.checkSet(myTokens);
                 if (isSet) {
                     for (int i = 0; i < 3; i++) {
@@ -195,7 +196,7 @@ public class Player implements Runnable {
         }
     }
 
-    public void deleteToken() {
+    public void deleteTokens() {
         for (int i = 0; i < 3; i++) {
             if (myTokens[i] != -1) {
                 table.removeToken(id, myTokens[i]);
