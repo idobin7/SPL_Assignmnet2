@@ -104,6 +104,7 @@ public class Main {
         return logger;
     }
 
+
     public static void setLoggerLevelAndFormat(Logger logger, Level level, String format) {
         Handler[] handlers = logger.getHandlers();
         if (handlers != null) Arrays.stream(handlers).forEach(h -> h.setFormatter(new SimpleFormatter() {

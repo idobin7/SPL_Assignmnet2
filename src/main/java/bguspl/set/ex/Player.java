@@ -79,7 +79,7 @@ public class Player implements Runnable {
         this.id = id;
         this.human = human;
         this.tokenCounter = 0;
-        this.myTokens = new Integer[3];
+        this.myTokens = new Integer[env.config.featureSize];
         for (int i = 0; i < myTokens.length; i++) {
             myTokens[i] = -1;
         }
@@ -96,13 +96,16 @@ public class Player implements Runnable {
         if (!human) createArtificialIntelligence();
 
         while (!terminate) {
-            if(!actions.isEmpty()) {
-                int slotAction = actions.remove();
-                if (hasToken(slotAction))
-                    removeToken(slotAction);
-                else
-                    placeToken(slotAction);
-            }
+
+                if (!actions.isEmpty()) {
+
+                    int slotAction = actions.remove();
+                    if (hasToken(slotAction))
+                        removeToken(slotAction);
+                    else
+                        placeToken(slotAction);
+                }
+          //  }
             // TODO implement main player loop
         }
         if (!human) try { aiThread.join(); } catch (InterruptedException ignored) {}
@@ -119,10 +122,11 @@ public class Player implements Runnable {
             env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
             while (!terminate) {
                 int slotAction = (int) (Math.random() * env.config.tableSize);
-                if (hasToken(slotAction))
+                keyPressed(slotAction);
+              /*  if (hasToken(slotAction))
                     removeToken(slotAction);
                 else
-                    placeToken(slotAction);
+                    placeToken(slotAction); */
                 // TODO implement player key press simulator
                 try {
                     synchronized (this) { wait(); }
@@ -147,7 +151,11 @@ public class Player implements Runnable {
      * @param slot - the slot corresponding to the key pressed.
      */
     public void keyPressed(int slot) {
-        actions.add(slot);
+        synchronized (table) {
+      //  synchronized (actions) {
+            actions.add(slot);
+     //   }
+        }
     }
 
     /**
@@ -159,30 +167,39 @@ public class Player implements Runnable {
     public void point() {
         score++;
         int ignored = table.countCards(); // this part is just for demonstration in the unit tests
-        env.ui.setScore(id, ++score);
+        env.ui.setScore(id, score);
         setFreeze(env.config.pointFreezeMillis);
     }
 
     public void placeToken(int slot) {
-        if (tokenCounter < 3) {
-            myTokens[tokenCounter] = slot;
-            tokenCounter++;
-            table.placeToken(id, slot);
-            if (tokenCounter == 3) {
-                boolean isSet;
-                table.setsDeclared.add(id);
-                isSet = dealer.checkSet(myTokens);
-                if (isSet) {
-                    for (int i = 0; i < 3; i++) {
-                        removeToken(myTokens[i]);
-                        point();
+            if (tokenCounter < env.config.featureSize) {
+                    boolean isfound = false;
+                    for (int i = 0; i < myTokens.length && !isfound; i++) {
+                        if (myTokens[i] == -1) {
+                            myTokens[i] = slot;
+                            isfound = true;
+                        }
                     }
-                } else {
-                    penalty();
+                    tokenCounter++;
+                    table.placeToken(id, slot);
+                    if (tokenCounter == env.config.featureSize) {
+                        boolean isSet;
+                     //   table.setsDeclared.add(id);
+                        Integer[] setCopy = new Integer[env.config.featureSize];
+                        for (int i = 0; i < setCopy.length; i++)
+                            setCopy[i] = myTokens[i];
+                        isSet = dealer.checkSet(setCopy);
+                        if (isSet)
+                            point();
+                        else {
+                            penalty();
+                        }
+
+                    }
+
                 }
-            }
         }
-    }
+
 
     public void removeToken(int slot) {
         boolean found = false;
@@ -197,7 +214,7 @@ public class Player implements Runnable {
     }
 
     public void deleteTokens() {
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < env.config.featureSize; i++) {
             if (myTokens[i] != -1) {
                 table.removeToken(id, myTokens[i]);
                 tokenCounter--;
@@ -214,11 +231,23 @@ public class Player implements Runnable {
     }
 
     public void setFreeze(long millies) {
-        while (millies > 0) {
-            env.ui.setFreeze(id, millies);
-            millies = millies - Table.SECOND_BY_MILLIS;
+        try {
+            while (millies > 0) {
+                env.ui.setFreeze(id, millies);
+                Thread.sleep(millies);
+                millies = millies - Table.SECOND_BY_MILLIS;
+            }
+            env.ui.setFreeze(id, 0);
+            unFreeze();
+            actions.clear();
+        }catch (InterruptedException e){
         }
-        //syncronized therd
+    }
+
+    public void unFreeze() {
+        synchronized (actions) {
+            actions.notifyAll();
+        }
     }
 
     public int score() {

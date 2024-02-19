@@ -54,7 +54,7 @@ public class Dealer implements Runnable {
         this.table = table;
         this.players = players;
         deck = IntStream.range(0, env.config.deckSize).boxed().collect(Collectors.toList());
-        cardsToRemove=new Integer[3];
+        cardsToRemove=new Integer[env.config.featureSize];
         for(int i=0 ;i<cardsToRemove.length;i++){
             cardsToRemove[i]=null;
         }
@@ -74,6 +74,7 @@ public class Dealer implements Runnable {
             playerThread.start();
         }
         while (!shouldFinish()) {
+            reshuffleTime = System.currentTimeMillis() + env.config.turnTimeoutMillis;
             placeCardsOnTable();
             timerLoop();
             updateTimerDisplay(false);
@@ -90,8 +91,10 @@ public class Dealer implements Runnable {
         while (!terminate && System.currentTimeMillis() < reshuffleTime) {
             sleepUntilWokenOrTimeout();
             updateTimerDisplay(false);
-            removeCardsFromTable();
-            placeCardsOnTable();
+            synchronized (table) {
+                removeCardsFromTable();
+                placeCardsOnTable();
+            }
         }
     }
 
@@ -99,7 +102,9 @@ public class Dealer implements Runnable {
      * Called when the game should be terminated.
      */
     public void terminate() {
-        // TODO implement
+        for (Player player : players)
+            player.terminate();
+        terminate = true;
     }
 
     /**
@@ -117,11 +122,15 @@ public class Dealer implements Runnable {
     private void removeCardsFromTable() {
         for(int i=0;i<cardsToRemove.length;i++){
             if(cardsToRemove[i] != null){
+                int slotToEmpty = cardsToRemove[i];
+                List<Integer>[] tmp = table.getTokenMap();
+                while(!(tmp[cardsToRemove[i]].isEmpty())){
+                    players[tmp[cardsToRemove[i]].get(0)].removeToken(slotToEmpty);
+                }
                 table.removeCard(cardsToRemove[i]);
                 cardsToRemove[i]=null;
             }
         }
-        placeCardsOnTable();
     }
 
     /**
@@ -132,7 +141,7 @@ public class Dealer implements Runnable {
         Collections.shuffle(slots);
         for (int slot: slots){
             if(!deck.isEmpty() && table.slotToCard[slot] == null){
-                Integer cardToPlace = deck.remove(deck.size() - 1);
+                Integer cardToPlace = deck.remove(0);
                 table.placeCard(cardToPlace, slot);
             }
         }
@@ -142,35 +151,22 @@ public class Dealer implements Runnable {
      * Sleep for a fixed amount of time or until the thread is awakened for some purpose.
      */
     private void sleepUntilWokenOrTimeout() {
-        synchronized (table.setsDeclared) {
             try {
-                if (env.config.turnTimeoutMillis >= 0) {
-                    long waitingTime = whenToWake - System.currentTimeMillis();
-                    if (table.setsDeclared.isEmpty() && waitingTime > 1)
-                        table.setsDeclared.wait(waitingTime - 1);
-                }
-                // no timer state
-                else if (env.config.turnTimeoutMillis < 0) {
-                    if (table.setsDeclared.isEmpty())
-                        table.setsDeclared.wait();
-                }
+                dealerThread.sleep(1);
             } catch (InterruptedException ignored) {}
-        }    }
+        }
 
     /**
      * Reset and/or update the countdown and the countdown display.
      */
     private void updateTimerDisplay(boolean reset) {
-            long time = System.currentTimeMillis();
-            if(!reset) {
-                if (time <= this.env.config.turnTimeoutWarningMillis && time >= 0)
-                    this.env.ui.setCountdown(time, true);
-                else
-                    this.env.ui.setCountdown(time, false);
-            } else {
-                this.env.ui.setCountdown(time+this.env.config.turnTimeoutMillis, false);
-            }
-
+        if (reset && !shouldFinish()) {
+            reshuffleTime = System.currentTimeMillis() + env.config.turnTimeoutMillis;
+            env.ui.setCountdown(reshuffleTime - System.currentTimeMillis(), false);
+        } else if (reshuffleTime - System.currentTimeMillis() > env.config.turnTimeoutWarningMillis)
+            env.ui.setCountdown(reshuffleTime - System.currentTimeMillis(), false);
+        else
+            env.ui.setCountdown(reshuffleTime - System.currentTimeMillis(), true);
     }
 
     /**
@@ -224,22 +220,22 @@ public class Dealer implements Runnable {
         env.ui.announceWinner(winners);
     }
 
-    public boolean checkSet(Integer[] myToken){
-        boolean isSetBool;
-        int[] isSet = new int[3];
-        for (int i = 0; i < 3; i++) {
-            isSet[i] = table.slotToCard[myToken[i]];
-        }
-        isSetBool=env.util.testSet(isSet);
-        if(isSetBool){
-            cardsToRemove=myToken;
-            sucSet();
-        }
-        return isSetBool;
+    public boolean checkSet(Integer[] myToken) {
+            boolean isSetBool;
+            int[] isSet = new int[env.config.featureSize];
+            for (int i = 0; i < env.config.featureSize; i++) {
+                isSet[i] = table.slotToCard[myToken[i]];
+            }
+            isSetBool = env.util.testSet(isSet);
+            if (isSetBool) {
+                cardsToRemove = myToken;
+                sucSet();
+            }
+            return isSetBool;
     }
 
     public void sucSet(){
-        removeCardsFromTable();
+       // removeCardsFromTable();
         updateTimerDisplay(true);
     }
 }

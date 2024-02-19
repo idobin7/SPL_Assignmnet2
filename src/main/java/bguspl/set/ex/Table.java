@@ -28,7 +28,7 @@ public class Table {
      */
     protected final Integer[] cardToSlot; // slot per card (if any)
 
-    private List<Integer>[] tokenMap;
+    protected List<Integer>[] tokenMap;
 
     protected Queue<Integer> setsDeclared;
 
@@ -118,11 +118,9 @@ public class Table {
         try {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {}
-
-        Integer card=slotToCard[slot];
-        cardToSlot[card]=null;
-        slotToCard[slot]=null;
-
+            Integer card = slotToCard[slot];
+            cardToSlot[card] = null;
+            slotToCard[slot] = null;
         env.ui.removeCard(slot);
 
     }
@@ -153,7 +151,12 @@ public class Table {
                     found = true;
                 }
             }
+        env.ui.removeToken(player, slot);
         return found;
+    }
+
+    public List<Integer>[] getTokenMap(){
+        return tokenMap;
     }
 
 
