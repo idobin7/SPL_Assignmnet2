@@ -46,6 +46,9 @@ public class Dealer implements Runnable {
 
     private Thread dealerThread;
 
+    public final Object dealerLock;
+
+
 
 
 
@@ -55,6 +58,7 @@ public class Dealer implements Runnable {
         this.players = players;
         deck = IntStream.range(0, env.config.deckSize).boxed().collect(Collectors.toList());
         cardsToRemove=new Integer[env.config.featureSize];
+        this.dealerLock = new Object();
         for(int i=0 ;i<cardsToRemove.length;i++){
             cardsToRemove[i]=null;
         }
@@ -173,17 +177,18 @@ public class Dealer implements Runnable {
      * Returns all the cards from the table to the deck.
      */
     private void removeAllCardsFromTable() {
-        removeAllTokens();
-        List<Integer> slots = IntStream.range(0, env.config.tableSize).boxed().collect(Collectors.toList());
-        for (int slot : slots) {
-            Integer cardToRemove = table.slotToCard[slot];
-            if (cardToRemove != null) {
-                table.removeCard(slot);
-                deck.add(cardToRemove);
+        synchronized (this.table) {
+            removeAllTokens();
+            List<Integer> slots = IntStream.range(0, env.config.tableSize).boxed().collect(Collectors.toList());
+            for (int slot : slots) {
+                Integer cardToRemove = table.slotToCard[slot];
+                if (cardToRemove != null) {
+                    table.removeCard(slot);
+                    deck.add(cardToRemove);
+                }
             }
+            Collections.shuffle(deck);
         }
-        Collections.shuffle(deck);
-
     }
 
 
