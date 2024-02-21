@@ -3,6 +3,7 @@ package bguspl.set.ex;
 import bguspl.set.Env;
 
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.stream.Collectors;
@@ -99,6 +100,17 @@ public class Dealer implements Runnable {
                 removeCardsFromTable();
                 placeCardsOnTable();
             }
+            while (noSetsAtAll() && !deck.isEmpty()) {
+                removeAllCardsFromTable();
+                placeCardsOnTable();
+                updateTimerDisplay(true);
+            }
+            if (noSetsAtAll() && deck.isEmpty()) {
+                terminate();
+                announceWinners();
+                env.logger.info("Thread " + Thread.currentThread().getName() + " terminated.");
+            }
+
         }
     }
 
@@ -119,6 +131,16 @@ public class Dealer implements Runnable {
     private boolean shouldFinish() {
         return terminate || env.util.findSets(deck, 1).size() == 0;
     }
+
+    private boolean noSetsAtAll() {
+        List<Integer> slotToCardsToCheck = new LinkedList<Integer>();
+        for (int i = 0; i < table.slotToCard.length; i++) {
+            if (table.slotToCard[i] != null)
+                slotToCardsToCheck.add(table.slotToCard[i]);
+        }
+        return env.util.findSets(slotToCardsToCheck, 1).isEmpty();
+    }
+
 
     /**
      * Checks cards should be removed from the table and removes them.
