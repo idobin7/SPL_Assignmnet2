@@ -97,15 +97,17 @@ public class Player implements Runnable {
 
         while (!terminate) {
 
-                if (!actions.isEmpty()) {
+            if (!actions.isEmpty()) {
 
-                    int slotAction = actions.remove();
+                int slotAction = actions.remove();
+                if (table.slotToCard[slotAction]!=null) {
                     if (hasToken(slotAction))
                         removeToken(slotAction);
                     else
                         placeToken(slotAction);
                 }
-          //  }
+            }
+            //  }
             // TODO implement main player loop
         }
         if (!human) try { aiThread.join(); } catch (InterruptedException ignored) {}
@@ -152,9 +154,9 @@ public class Player implements Runnable {
      */
     public void keyPressed(int slot) {
         synchronized (table) {
-      //  synchronized (actions) {
+            //  synchronized (actions) {
             actions.add(slot);
-     //   }
+            //   }
         }
     }
 
@@ -172,33 +174,33 @@ public class Player implements Runnable {
     }
 
     public void placeToken(int slot) {
-            if (tokenCounter < env.config.featureSize) {
-                    boolean isfound = false;
-                    for (int i = 0; i < myTokens.length && !isfound; i++) {
-                        if (myTokens[i] == -1) {
-                            myTokens[i] = slot;
-                            isfound = true;
-                        }
-                    }
-                    tokenCounter++;
-                    table.placeToken(id, slot);
-                    if (tokenCounter == env.config.featureSize) {
-                        boolean isSet;
-                     //   table.setsDeclared.add(id);
-                        Integer[] setCopy = new Integer[env.config.featureSize];
-                        for (int i = 0; i < setCopy.length; i++)
-                            setCopy[i] = myTokens[i];
-                        isSet = dealer.checkSet(setCopy);
-                        if (isSet)
-                            point();
-                        else {
-                            penalty();
-                        }
-
-                    }
-
+        if (tokenCounter < env.config.featureSize) {
+            boolean isfound = false;
+            for (int i = 0; i < myTokens.length && !isfound; i++) {
+                if (myTokens[i] == -1) {
+                    myTokens[i] = slot;
+                    isfound = true;
                 }
+            }
+            tokenCounter++;
+            table.placeToken(id, slot);
+            if (tokenCounter == env.config.featureSize) {
+                boolean isSet;
+                //   table.setsDeclared.add(id);
+                Integer[] setCopy = new Integer[env.config.featureSize];
+                for (int i = 0; i < setCopy.length; i++)
+                    setCopy[i] = myTokens[i];
+                isSet = dealer.checkSet(setCopy);
+                if (isSet)
+                    point();
+                else {
+                    penalty();
+                }
+
+            }
+
         }
+    }
 
 
     public void removeToken(int slot) {

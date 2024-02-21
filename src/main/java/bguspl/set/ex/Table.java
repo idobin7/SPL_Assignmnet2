@@ -118,9 +118,9 @@ public class Table {
         try {
             Thread.sleep(env.config.tableDelayMillis);
         } catch (InterruptedException ignored) {}
-            Integer card = slotToCard[slot];
-            cardToSlot[card] = null;
-            slotToCard[slot] = null;
+        Integer card = slotToCard[slot];
+        cardToSlot[card] = null;
+        slotToCard[slot] = null;
         env.ui.removeCard(slot);
 
     }
@@ -144,13 +144,13 @@ public class Table {
     public boolean removeToken(int player, int slot) {
         boolean found = false;
         ListIterator<Integer> iterator = tokenMap[slot].listIterator();
-            while (iterator.hasNext() && !found) {
-                Integer temp = iterator.next();
-                if (temp.equals(player)) {
-                    iterator.remove();
-                    found = true;
-                }
+        while (iterator.hasNext() && !found) {
+            Integer temp = iterator.next();
+            if (temp.equals(player)) {
+                iterator.remove();
+                found = true;
             }
+        }
         env.ui.removeToken(player, slot);
         return found;
     }

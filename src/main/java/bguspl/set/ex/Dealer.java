@@ -151,10 +151,10 @@ public class Dealer implements Runnable {
      * Sleep for a fixed amount of time or until the thread is awakened for some purpose.
      */
     private void sleepUntilWokenOrTimeout() {
-            try {
-                dealerThread.sleep(1);
-            } catch (InterruptedException ignored) {}
-        }
+        try {
+            dealerThread.sleep(1);
+        } catch (InterruptedException ignored) {}
+    }
 
     /**
      * Reset and/or update the countdown and the countdown display.
@@ -221,23 +221,22 @@ public class Dealer implements Runnable {
     }
 
     public boolean checkSet(Integer[] myToken) {
-            boolean isSetBool;
-            int[] isSet = new int[env.config.featureSize];
-            for (int i = 0; i < env.config.featureSize; i++) {
-                isSet[i] = table.slotToCard[myToken[i]];
-            }
-            isSetBool = env.util.testSet(isSet);
-            if (isSetBool) {
-                cardsToRemove = myToken;
-                sucSet();
-            }
-            return isSetBool;
+        boolean isSetBool;
+        int[] isSet = new int[env.config.featureSize];
+        for (int i = 0; i < env.config.featureSize; i++) {
+            isSet[i] = table.slotToCard[myToken[i]];
+        }
+        isSetBool = env.util.testSet(isSet);
+        if (isSetBool) {
+            cardsToRemove = myToken;
+            sucSet();
+        }
+        return isSetBool;
     }
 
     public void sucSet(){
-       // removeCardsFromTable();
+        // removeCardsFromTable();
         updateTimerDisplay(true);
     }
 }
-
 
