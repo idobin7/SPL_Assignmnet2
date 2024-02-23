@@ -79,12 +79,15 @@ public class Dealer implements Runnable {
             playerThread.start();
         }
         while (!shouldFinish()) {
+            Collections.shuffle(deck);
             reshuffleTime = System.currentTimeMillis() + env.config.turnTimeoutMillis;
             placeCardsOnTable();
+            updateTimerDisplay(false);
             timerLoop();
             updateTimerDisplay(false);
             removeAllCardsFromTable();
         }
+        if(!terminate) terminate();
         announceWinners();
         env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
     }
@@ -96,10 +99,10 @@ public class Dealer implements Runnable {
         while (!terminate && System.currentTimeMillis() < reshuffleTime) {
             sleepUntilWokenOrTimeout();
             updateTimerDisplay(false);
-            synchronized (table) {
+      //      synchronized (table) {
                 removeCardsFromTable();
                 placeCardsOnTable();
-            }
+      //      }
             while (noSetsAtAll() && !deck.isEmpty()) {
                 removeAllCardsFromTable();
                 placeCardsOnTable();
@@ -120,6 +123,7 @@ public class Dealer implements Runnable {
     public void terminate() {
         for (Player player : players)
             player.terminate();
+        env.ui.dispose();
         terminate = true;
     }
 

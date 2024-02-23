@@ -4,6 +4,7 @@ import bguspl.set.Env;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Random;
 
 /**
  * This class manages the players' threads and data
@@ -96,18 +97,22 @@ public class Player implements Runnable {
         if (!human) createArtificialIntelligence();
 
         while (!terminate) {
-
             if (!actions.isEmpty()) {
-
                 int slotAction = actions.remove();
+                System.out.println(slotAction);
                 if (table.slotToCard[slotAction]!=null) {
-                    if (hasToken(slotAction))
+                    if (hasToken(slotAction)) {
+                        System.out.println("has token");
                         removeToken(slotAction);
-                    else
+                    }
+                    else {
+                        System.out.println(" not has token");
                         placeToken(slotAction);
+                    }
+                } else {
+                    System.out.println("not in if");
                 }
             }
-            //  }
             // TODO implement main player loop
         }
         if (!human) try { aiThread.join(); } catch (InterruptedException ignored) {}
@@ -120,19 +125,17 @@ public class Player implements Runnable {
      */
     private void createArtificialIntelligence() {
         // note: this is a very, very smart AI (!)
-        aiThread = new Thread(() -> {
+         aiThread = new Thread(() -> {
             env.logger.info("thread " + Thread.currentThread().getName() + " starting.");
             while (!terminate) {
-                int slotAction = (int) (Math.random() * env.config.tableSize);
+                Random r = new Random();
+                int slotAction = r.nextInt(env.config.tableSize);
+                System.out.println(slotAction);
                 keyPressed(slotAction);
-              /*  if (hasToken(slotAction))
-                    removeToken(slotAction);
-                else
-                    placeToken(slotAction); */
                 // TODO implement player key press simulator
-                try {
-                    synchronized (this) { wait(); }
-                } catch (InterruptedException ignored) {}
+                    try {
+                        synchronized (this) { wait(); }
+                    } catch (InterruptedException ignored) {}
             }
             env.logger.info("thread " + Thread.currentThread().getName() + " terminated.");
         }, "computer-" + id);
@@ -144,7 +147,10 @@ public class Player implements Runnable {
      */
     public void terminate() {
         terminate = true;
+        if (!human)
+            aiThread.interrupt();
     }
+
 
 
     /**
@@ -153,11 +159,12 @@ public class Player implements Runnable {
      * @param slot - the slot corresponding to the key pressed.
      */
     public void keyPressed(int slot) {
-        synchronized (table) {
-            //  synchronized (actions) {
-            actions.add(slot);
-            //   }
-        }
+        try {
+            synchronized (actions) {
+                actions.add(slot);
+                actions.notifyAll();
+            }
+        } catch (IllegalStateException ignored) {}
     }
 
     /**
@@ -174,6 +181,7 @@ public class Player implements Runnable {
     }
 
     public void placeToken(int slot) {
+        System.out.println("place token");
         if (tokenCounter < env.config.featureSize) {
             boolean isfound = false;
             for (int i = 0; i < myTokens.length && !isfound; i++) {
